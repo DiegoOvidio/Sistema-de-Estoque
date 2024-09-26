@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project X</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #4caf50;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 3px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .menu {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .menu button {
+            margin: 5px;
+            flex: 1 0 30%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .menu button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .content {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>Project X</h1>
+</header>
+<div class="container">
+    <div id="loginScreen">
+        <h2>Login</h2>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Digite seu email" />
+        </div>
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" id="password" placeholder="Digite sua senha" />
+        </div>
+        <button onclick="login()">Entrar</button>
+        <button onclick="showRegister()">Cadastrar</button>
+    </div>
+
+    <div id="registerScreen" class="hidden">
+        <h2>Cadastrar Funcionário</h2>
+        <div class="form-group">
+            <label for="employeeEmail">Email:</label>
+            <input type="email" id="employeeEmail" />
+        </div>
+        <div class="form-group">
+            <label for="employeePassword">Senha:</label>
+            <input type="password" id="employeePassword" />
+        </div>
+        <button onclick="registerEmployee()">Cadastrar</button>
+        <button onclick="showLogin()">Voltar ao Login</button>
+    </div>
+</div>
+
+<div id="menuScreen" class="hidden">
+    <div class="menu">
+        <button onclick="showContent('viewStock')">Ver Estoque</button>
+        <button onclick="showContent('addItem')">Adicionar Item</button>
+        <button onclick="showContent('removeItem')">Remover Item</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="viewStock" class="content hidden">
+        <h2>Estoque</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="addItem" class="content hidden">
+        <h2>Adicionar Item</h2>
+        <div class="form-group">
+            <label for="addItemName">Nome do Item:</label>
+            <input type="text" id="addItemName" placeholder="Digite o nome do item" />
+        </div>
+        <div class="form-group">
+            <label for="addItemQuantity">Quantidade:</label>
+            <input type="number" id="addItemQuantity" min="1" placeholder="Digite a quantidade" />
+        </div>
+        <button onclick="addItem()">Adicionar</button>
+    </div>
+
+    <div id="removeItem" class="content hidden">
+        <h2>Remover Item</h2>
+        <div class="form-group">
+            <label for="removeItemId">ID do Item:</label>
+            <input type="text" id="removeItemId" />
+        </div>
+        <button onclick="removeItem()">Remover</button>
+    </div>
+</div>
+
+<script>
+    let employees = JSON.parse(localStorage.getItem('employees')) || [];
+    let items = JSON.parse(localStorage.getItem('items')) || {};
+
+    function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+            alert("Por favor, preencha todos os campos.");
+            return;
+        }
+
+        if (employees.some(emp => emp.email === email && emp.password === password)) {
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("menuScreen").classList.remove("hidden");
+            showContent("viewStock");
+        } else {
+            alert("Email ou senha inválidos.");
+        }
+    }
+
+    function showRegister() {
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("registerScreen").classList.remove("hidden");
+    }
+
+    function showLogin() {
+        document.getElementById("registerScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+    }
+
+    function logout() {
+        document.getElementById("menuScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+        document.getElementById("email").value = '';
+        document.getElementById("password").value = '';
+        alert("Você foi desconectado.");
+    }
+
+    function addItem() {
+        const name = document.getElementById("addItemName").value;
+        const quantity = parseInt(document.getElementById("addItemQuantity").value);
+        const id = Date.now(); // Gerar um ID único baseado no timestamp
+
+        items[id] = { name, quantity };
+        localStorage.setItem('items', JSON.stringify(items));
+
+        alert("Item adicionado com sucesso");
+        showContent("viewStock");
+        loadStock(); // Atualiza a tabela
+    }
+
+    function removeItem() {
+        const id = document.getElementById("removeItemId").value;
+
+        if (items[id]) {
+            delete items[id];
+            localStorage.setItem('items', JSON.stringify(items));
+            alert("Item removido com sucesso");
+            showContent("viewStock");
+            loadStock(); // Atualiza a tabela
+        } else {
+            alert("Item não encontrado.");
+        }
+    }
+
+    function registerEmployee() {
+        const email = document.getElementById("employeeEmail").value.trim();
+        const password = document.getElementById("employeePassword").value.trim();
+
+        if (!email || !password) {
+            alert("Por favor, preencha todos os campos.");
+            return;
+        }
+
+        employees.push({ email, password });
+        localStorage.setItem('employees', JSON.stringify(employees));
+        alert("Funcionário cadastrado com sucesso");
+        showLogin(); // Voltar à tela de login após cadastrar
+    }
+
+    function loadStock() {
+        const stockTableBody = document.getElementById("stockTableBody");
+        stockTableBody.innerHTML = "";
+        for (const id in items) {
+            const item = items[id];
+            const row = `<tr>
+                        <td>${id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                    </tr>`;
+            stockTableBody.innerHTML += row;
+        }
+    }
+
+    function showContent(contentId) {
+        const contents = document.querySelectorAll('.content');
+        contents.forEach(content => content.classList.add('hidden'));
+        document.getElementById(contentId).classList.remove('hidden');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadStock();
+    });
+</script>
+</body>
+</html>
